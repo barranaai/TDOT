@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDOT Immigration - Full Canonical AS-IS Case Lifecycle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            min-width: fit-content;
+        }
+        
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+                margin: 0;
+            }
+            
+            @page {
+                size: 150in 50in;
+                margin: 0.5in;
+            }
+        }
+        
+        .diagram-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            padding: 16px;
+            background: #1a1a2e;
+            color: #fff;
+            margin-bottom: 0;
+            letter-spacing: 1px;
+        }
+        
+        .diagram-container {
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #1a1a2e;
+            background: #fff;
+            padding: 20px 25px 40px 35px;
+            overflow: visible;
+            box-sizing: border-box;
+            width: fit-content;
+            min-width: 100%;
+        }
+        
+        .swimlane {
+            display: flex;
+            min-height: 120px;
+            border-bottom: 1px solid #ccc;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .swimlane:last-child {
+            border-bottom: none;
+        }
+        
+        .lane-header {
+            width: 180px;
+            min-width: 180px;
+            background: #1a1a2e;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px;
+            border-right: 2px solid #1a1a2e;
+            line-height: 1.3;
+        }
+        
+        .lane-body {
+            flex: 1;
+            display: flex;
+            min-height: 120px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .lane-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 25px 20px 45px 30px;
+            gap: 20px;
+            background: #fff;
+            min-height: 120px;
+            position: relative;
+        }
+        
+        .lane-annotations {
+            width: 310px;
+            min-width: 310px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(255,255,255,0.95);
+            border-left: 1px dashed #ccc;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            position: sticky;
+            right: 0;
+        }
+        
+        .lane-content.client {
+            background: #f0f7ff;
+        }
+        
+        .lane-content.consultant {
+            background: #fff5f0;
+        }
+        
+        .lane-content.finance {
+            background: #f0fff4;
+        }
+        
+        .lane-content.ops-supervisor {
+            background: #fff8f0;
+        }
+        
+        .lane-content.case-manager {
+            background: #f8f0ff;
+        }
+        
+        .lane-content.submission {
+            background: #f0ffff;
+        }
+        
+        .lane-content.senior-review {
+            background: #fffaf0;
+        }
+        
+        .lane-content.admin {
+            background: #f5f5f5;
+        }
+        
+        /* BPMN Activity Box */
+        .activity {
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 10px 14px;
+            min-width: 140px;
+            max-width: 200px;
+            font-size: 11px;
+            text-align: center;
+            position: relative;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.3;
+            margin: 8px 0 8px 10px;
+        }
+        
+        .lane-content > .activity:first-of-type {
+            margin-left: 10px;
+        }
+        
+        .activity .step-num {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            background: #333;
+            color: #fff;
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        /* BPMN Gateway (Diamond) */
+        .gateway {
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border: 3px solid #333;
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+            margin: 30px 0;
+        }
+        
+        .gateway.hard-gate {
+            border-color: #c0392b;
+            background: #fef0f0;
+        }
+        
+        .gateway-label {
+            position: absolute;
+            bottom: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            font-weight: 600;
+            white-space: nowrap;
+            color: #c0392b;
+        }
+        
+        /* BPMN Start/End Events */
+        .start-event {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #27ae60;
+            border-radius: 50%;
+            background: #e8f8f0;
+            flex-shrink: 0;
+        }
+        
+        .end-event {
+            width: 30px;
+            height: 30px;
+            border: 5px solid #c0392b;
+            border-radius: 50%;
+            background: #fef0f0;
+            flex-shrink: 0;
+        }
+        
+        /* Loop Container */
+        .loop-container {
+            border: 2px dashed #8e44ad;
+            border-radius: 10px;
+            padding: 15px;
+            background: rgba(142, 68, 173, 0.05);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .loop-label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: #8e44ad;
+            color: #fff;
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .loop-frequency {
+            position: absolute;
+            bottom: -18px;
+            left: 15px;
+            font-size: 9px;
+            color: #8e44ad;
+            font-style: italic;
+            white-space: nowrap;
+        }
+        
+        /* AS-IS Tags - No absolute positioning */
+        .as-is-tag {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 9px;
+            color: #856404;
+            line-height: 1.3;
+        }
+        
+        /* Conditional Path Marker */
+        .conditional-marker {
+            font-size: 9px;
+            color: #666;
+            font-style: italic;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        /* Spacer for alignment */
+        .spacer {
+            min-width: 20px;
+        }
+        
+        .spacer-lg {
+            min-width: 160px;
+        }
+        
+        .spacer-xl {
+            min-width: 320px;
+        }
+        
+        .spacer-xxl {
+            min-width: 480px;
+        }
+        
+        /* Dependency indicator (not a gate) */
+        .dependency {
+            border: 2px solid #2980b9;
+            background: #ebf5fb;
+        }
+        
+        .dependency .step-num {
+            background: #2980b9;
+        }
+
+        /* Inline arrow */
+        .inline-arrow {
+            font-size: 18px;
+            color: #666;
+            margin: 0 5px;
+        }
+        
+        /* ============================================
+           BOTTLENECK ANNOTATIONS (Anchored to Lanes)
+           ============================================ */
+        .bottleneck-callout {
+            border: 2px dashed #c0392b;
+            border-radius: 8px;
+            background: rgba(231, 76, 60, 0.08);
+            padding: 10px 12px;
+            font-size: 10px;
+            line-height: 1.4;
+            box-shadow: 0 2px 8px rgba(192, 57, 43, 0.15);
+        }
+        
+        .bottleneck-callout .bottleneck-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(192, 57, 43, 0.3);
+        }
+        
+        .bottleneck-callout .bottleneck-icon {
+            width: 18px;
+            height: 18px;
+            background: #c0392b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .bottleneck-callout .bottleneck-label {
+            font-weight: 700;
+            color: #c0392b;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .bottleneck-callout .bottleneck-title {
+            font-weight: 600;
+            color: #922b21;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+        
+        .bottleneck-callout .bottleneck-detail {
+            color: #5a5a5a;
+            margin-bottom: 3px;
+        }
+        
+        .bottleneck-callout .bottleneck-detail strong {
+            color: #333;
+        }
+        
+        .bottleneck-callout.soft-bottleneck {
+            border-color: #e67e22;
+            background: rgba(230, 126, 34, 0.08);
+        }
+        
+        .bottleneck-callout.soft-bottleneck .bottleneck-icon {
+            background: #e67e22;
+        }
+        
+        .bottleneck-callout.soft-bottleneck .bottleneck-label {
+            color: #e67e22;
+        }
+        
+        .bottleneck-callout.soft-bottleneck .bottleneck-title {
+            color: #a04000;
+        }
+    </style>
+</head>
+<body>
+    <div class="diagram-container">
+        <div class="diagram-title">TDOT IMMIGRATION — FULL CANONICAL AS-IS CASE LIFECYCLE</div>
+        
+        <!-- SWIMLANE 1: CLIENT -->
+        <div class="swimlane">
+            <div class="lane-header">CLIENT</div>
+            <div class="lane-body">
+                <div class="lane-content client">
+                    <div class="start-event"></div>
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">1-3</span>
+                        Lead Entry<br>
+                        <small style="font-size:9px;color:#666;">(Social media, WhatsApp, phone, email, personal channels)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    <div class="spacer-lg"></div>
+                    
+                    <div class="activity">
+                        <span class="step-num">10-11</span>
+                        Decision to Proceed<br>
+                        <small style="font-size:9px;color:#666;">(Via email, WhatsApp, phone; may be delayed weeks/months)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    
+                    <div class="activity">
+                        <span class="step-num">30-32</span>
+                        Document Upload<br>
+                        <small style="font-size:9px;color:#666;">(To CaseEasy; may claim complete when partial)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-lg"></div>
+                    
+                    <div class="activity dependency">
+                        <span class="step-num">47-50</span>
+                        Form Review &amp; Written Confirmation<br>
+                        <small style="font-size:9px;color:#666;">(Required before submission; may be delayed)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="end-event"></div>
+                </div>
+                <div class="lane-annotations">
+                    <div class="as-is-tag">AS-IS: No standardized intake channel; leads fragmented across platforms</div>
+                    <div class="as-is-tag">AS-IS: CaseEasy sends no upload notifications</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SWIMLANE 2: CONSULTANT -->
+        <div class="swimlane">
+            <div class="lane-header">CONSULTANT<br>(Shefali / Max)</div>
+            <div class="lane-body">
+                <div class="lane-content consultant">
+                    <div class="spacer-lg"></div>
+                    <span class="inline-arrow">↓</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">4-9</span>
+                        Consultation<br>
+                        <small style="font-size:9px;color:#666;">(Verbal; no questionnaire/recording; partial notes to monday.com)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">↓→</span>
+                </div>
+                <div class="lane-annotations">
+                    <div class="as-is-tag">AS-IS: No standardized intake; context retained mentally; consultation not recorded</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SWIMLANE 3: FINANCE -->
+        <div class="swimlane">
+            <div class="lane-header">FINANCE<br>(Asmita)</div>
+            <div class="lane-body">
+                <div class="lane-content finance">
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-lg"></div>
+                    <span class="inline-arrow">↓</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">12-15</span>
+                        Retainer &amp; Invoice<br>
+                        <small style="font-size:9px;color:#666;">(Collect details; prepare agreement + invoice)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="gateway hard-gate">
+                        <span class="gateway-label">HARD GATE: Steps 16-18</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;margin-left:15px;font-size:10px;max-width:120px;">
+                        <span>✓ Retainer Signed</span>
+                        <span>✓ Payment Received</span>
+                        <span style="color:#c0392b;font-weight:600;">No work until both satisfied</span>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">19-21</span>
+                        Case Creation<br>
+                        <small style="font-size:9px;color:#666;">(Create in CaseEasy; generate case ID; notify Ops Supervisor)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">↓→</span>
+                </div>
+                <div class="lane-annotations"></div>
+            </div>
+        </div>
+        
+        <!-- SWIMLANE 4: OPERATIONS SUPERVISOR -->
+        <div class="swimlane">
+            <div class="lane-header">OPERATIONS<br>SUPERVISOR<br>(Himali)</div>
+            <div class="lane-body">
+                <div class="lane-content ops-supervisor">
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <span class="inline-arrow">↓</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">22-24</span>
+                        Consultation Notes Transfer<br>
+                        <small style="font-size:9px;color:#666;">(Copy/paste from monday.com to case file)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">25-26</span>
+                        Case Assignment<br>
+                        <small style="font-size:9px;color:#666;">(Review type + workload; assign to Case Manager)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">↓→</span>
+                </div>
+                <div class="lane-annotations">
+                    <div class="as-is-tag">AS-IS: Manual transfer; may lose context</div>
+                    <div class="as-is-tag">AS-IS: Supervisor may also act as Case Manager when overloaded</div>
+                    <!-- BOTTLENECK 5: Manual Priority Determination -->
+                    <div class="bottleneck-callout soft-bottleneck">
+                        <div class="bottleneck-header">
+                            <span class="bottleneck-icon">!</span>
+                            <span class="bottleneck-label">BOTTLENECK</span>
+                        </div>
+                        <div class="bottleneck-title">Manual Priority Determination</div>
+                        <div class="bottleneck-detail">Priorities reset via daily huddles and senior input</div>
+                        <div class="bottleneck-detail">Limited system-driven prioritization</div>
+                        <div class="bottleneck-detail"><strong>Impact:</strong> Work starts after verbal alignment, not proactively</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SWIMLANE 5: CASE MANAGER -->
+        <div class="swimlane" style="min-height:180px;">
+            <div class="lane-header">CASE MANAGER</div>
+            <div class="lane-body">
+                <div class="lane-content case-manager" style="min-height:180px;">
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <span class="inline-arrow">↓</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">27-29</span>
+                        Checklist &amp; Questionnaire Sent<br>
+                        <small style="font-size:9px;color:#666;">(Program-specific; deadline communicated)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">↑→</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">33-34</span>
+                        Manual Document Monitoring<br>
+                        <small style="font-size:9px;color:#666;">(Check CaseEasy manually)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="loop-container">
+                        <span class="loop-label">REWORK LOOP</span>
+                        <span class="loop-frequency">Occurs ~5× (TR) / up to 10× (PR); delays may cause document expiry</span>
+                        
+                        <div class="activity">
+                            <span class="step-num">35-42</span>
+                            Document Review &amp; Rework Cycles<br>
+                            <small style="font-size:9px;color:#666;">(Missing/incorrect/incomplete/poorly named → follow-up emails → re-upload)</small>
+                        </div>
+                        <span class="inline-arrow">↺</span>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">45-46</span>
+                        Forms Preparation<br>
+                        <small style="font-size:9px;color:#666;">(Errors may occur from missing info, assumptions, interruptions)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">↑↓→</span>
+                </div>
+                <div class="lane-annotations">
+                    <div class="as-is-tag">AS-IS: Checklist static; not prioritized by urgency</div>
+                    <div class="as-is-tag">AS-IS: No system alerts</div>
+                    <div class="as-is-tag">AS-IS: Steps 43-44: Role overlap — CM does chasing, checking, reviewing, renaming, form-filling; no separate clerical role</div>
+                    <!-- BOTTLENECK 1: Document Collection Rework Loop -->
+                    <div class="bottleneck-callout">
+                        <div class="bottleneck-header">
+                            <span class="bottleneck-icon">1</span>
+                            <span class="bottleneck-label">BOTTLENECK</span>
+                        </div>
+                        <div class="bottleneck-title">Document Collection Rework Loop</div>
+                        <div class="bottleneck-detail"><strong>Observed:</strong> 5 cycles (TR) / up to 10 cycles (PR)</div>
+                        <div class="bottleneck-detail"><strong>Cause:</strong> Partial uploads, incorrect documents, client delays</div>
+                        <div class="bottleneck-detail"><strong>Impact:</strong> Repeated case manager effort before eligibility work can complete</div>
+                    </div>
+                    
+                    <!-- BOTTLENECK 2: Expiry-Driven Rework -->
+                    <div class="bottleneck-callout">
+                        <div class="bottleneck-header">
+                            <span class="bottleneck-icon">2</span>
+                            <span class="bottleneck-label">BOTTLENECK</span>
+                        </div>
+                        <div class="bottleneck-title">Expiry-Driven Rework</div>
+                        <div class="bottleneck-detail"><strong>Observed:</strong> Client delays cause documents to expire</div>
+                        <div class="bottleneck-detail"><strong>Examples:</strong> Bank statements, medicals, PCCs, financial reports</div>
+                        <div class="bottleneck-detail"><strong>Impact:</strong> Previously completed review steps must be repeated</div>
+                    </div>
+                    
+                    <!-- BOTTLENECK 3: Case Manager Role Overload -->
+                    <div class="bottleneck-callout">
+                        <div class="bottleneck-header">
+                            <span class="bottleneck-icon">3</span>
+                            <span class="bottleneck-label">BOTTLENECK</span>
+                        </div>
+                        <div class="bottleneck-title">Role Overload (Case Manager)</div>
+                        <div class="bottleneck-detail">Single role handles chasing, reviewing, and preparation</div>
+                        <div class="bottleneck-detail">Clerical and analytical work combined</div>
+                        <div class="bottleneck-detail"><strong>Impact:</strong> Context switching, delays, frustration, higher error risk</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SWIMLANE 6: SUBMISSION TEAM -->
+        <div class="swimlane">
+            <div class="lane-header">SUBMISSION TEAM<br>(Monica)</div>
+            <div class="lane-body">
+                <div class="lane-content submission">
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <span class="inline-arrow">↓</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">51-52</span>
+                        Transfer &amp; Review<br>
+                        <small style="font-size:9px;color:#666;">(Case transferred; Submission Team reviews application)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="conditional-marker">PR cases only ↓</div>
+                    
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">56-58</span>
+                        Submission to IRCC<br>
+                        <small style="font-size:9px;color:#666;">(Submit to portal; pay govt fees with client/company card)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">↓→</span>
+                </div>
+                <div class="lane-annotations">
+                    <div class="as-is-tag">AS-IS: Fee recovery may require follow-up</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SWIMLANE 7: SENIOR REVIEW -->
+        <div class="swimlane">
+            <div class="lane-header">SENIOR REVIEW<br>(Shefali)</div>
+            <div class="lane-body">
+                <div class="lane-content senior-review">
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-lg"></div>
+                    <div class="spacer-lg"></div>
+                    <span class="inline-arrow">↓</span>
+                    
+                    <div class="loop-container" style="border-color:#e67e22;">
+                        <span class="loop-label" style="background:#e67e22;">CONDITIONAL REWORK</span>
+                        
+                        <div class="activity dependency">
+                            <span class="step-num">53-55</span>
+                            Senior Review<br>
+                            <small style="font-size:9px;color:#666;">(PR: Express Entry, Spousal; may identify issues → rework)</small>
+                        </div>
+                        <span class="inline-arrow">↺ ↑</span>
+                        <div class="conditional-marker">Rework → Submission Team → Case Manager</div>
+                    </div>
+                    
+                    <span class="inline-arrow">↑→</span>
+                </div>
+                <div class="lane-annotations">
+                    <!-- BOTTLENECK 4: Senior Availability Dependency -->
+                    <div class="bottleneck-callout soft-bottleneck">
+                        <div class="bottleneck-header">
+                            <span class="bottleneck-icon">4</span>
+                            <span class="bottleneck-label">BOTTLENECK</span>
+                        </div>
+                        <div class="bottleneck-title">Senior Availability Dependency</div>
+                        <div class="bottleneck-detail">Not a formal gate, but frequent escalation point</div>
+                        <div class="bottleneck-detail">Throughput depends on senior bandwidth</div>
+                        <div class="bottleneck-detail"><strong>Impact:</strong> Queuing and wait time during peak load</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SWIMLANE 8: ADMIN TEAM -->
+        <div class="swimlane">
+            <div class="lane-header">ADMIN TEAM</div>
+            <div class="lane-body">
+                <div class="lane-content admin">
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-xl"></div>
+                    <div class="spacer-lg"></div>
+                    <span class="inline-arrow">↓</span>
+                    
+                    <div class="activity">
+                        <span class="step-num">59-60</span>
+                        Post-Submission Tracking<br>
+                        <small style="font-size:9px;color:#666;">(Track biometrics, file numbers, receipts, updates; log in monday.com)</small>
+                    </div>
+                    
+                    <span class="inline-arrow">→</span>
+                    
+                    <div class="end-event"></div>
+                </div>
+                <div class="lane-annotations"></div>
+            </div>
+        </div>
+        
+        <!-- GLOBAL AS-IS CHARACTERISTICS -->
+        <div style="background:#1a1a2e;padding:15px 20px;display:flex;gap:30px;flex-wrap:wrap;">
+            <div style="color:#ffc107;font-weight:600;font-size:11px;">GLOBAL OPERATIONAL CHARACTERISTICS (Steps 61-63):</div>
+            <div class="as-is-tag">AS-IS: No system-driven SLAs, aging rules, or inactivity alerts</div>
+            <div class="as-is-tag">AS-IS: Delays identified through manual reviews, meetings, or client escalation</div>
+            <div class="as-is-tag">AS-IS: Case prioritization is manual and leadership-driven</div>
+        </div>
+    </div>
+    
+    <!-- LEGEND (BPMN Standard Symbols Only) -->
+    <div style="margin-top:20px;padding:15px;background:#fff;border:1px solid #ccc;display:flex;gap:40px;align-items:center;flex-wrap:wrap;">
+        <div style="font-weight:600;font-size:12px;color:#333;">BPMN NOTATION:</div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:20px;height:20px;border:2px solid #27ae60;border-radius:50%;background:#e8f8f0;"></div>
+            <span style="font-size:11px;">Start Event</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:20px;height:20px;border:3px solid #c0392b;border-radius:50%;background:#fef0f0;"></div>
+            <span style="font-size:11px;">End Event</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:50px;height:25px;border:2px solid #333;border-radius:5px;background:#fff;"></div>
+            <span style="font-size:11px;">Activity</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:50px;height:25px;border:2px solid #2980b9;border-radius:5px;background:#ebf5fb;"></div>
+            <span style="font-size:11px;">Dependency (not gate)</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:18px;height:18px;border:2px solid #c0392b;background:#fef0f0;transform:rotate(45deg);"></div>
+            <span style="font-size:11px;margin-left:5px;">Hard Gate (Blocking)</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:60px;height:25px;border:2px dashed #8e44ad;border-radius:5px;background:rgba(142,68,173,0.05);"></div>
+            <span style="font-size:11px;">Rework Loop</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div class="as-is-tag">AS-IS Tag</div>
+            <span style="font-size:11px;">Operational Reality</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:60px;height:25px;border:2px dashed #c0392b;border-radius:5px;background:rgba(231,76,60,0.08);"></div>
+            <span style="font-size:11px;">Bottleneck Annotation</span>
+        </div>
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;color:#666;">→ ↓ ↑</span>
+            <span style="font-size:11px;">Flow Direction / Handoff</span>
+        </div>
+    </div>
+</body>
+</html>
