@@ -315,34 +315,6 @@
         .dependency .step-num {
             background: #2980b9;
         }
-        
-        /* Soft Operational Dependency (not a hard gate) */
-        .soft-dependency {
-            width: 50px;
-            height: 50px;
-            background: #fff;
-            border: 3px solid #e67e22;
-            transform: rotate(45deg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            flex-shrink: 0;
-            box-shadow: 2px 2px 4px rgba(230, 126, 34, 0.15);
-            margin: 30px 0;
-        }
-        
-        .soft-dependency-label {
-            position: absolute;
-            bottom: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 9px;
-            font-weight: 600;
-            white-space: nowrap;
-            color: #e67e22;
-            text-align: center;
-        }
 
         /* Inline arrow */
         .inline-arrow {
@@ -550,47 +522,7 @@
             </div>
         </div>
         
-        <!-- SWIMLANE 4: CASE SUPPORT / ADMIN -->
-        <div class="swimlane">
-            <div class="lane-header">CASE SUPPORT / ADMIN<br>(AS-IS – RECENTLY INTRODUCED)</div>
-            <div class="lane-body">
-                <div class="lane-content admin">
-                    <div class="spacer-xl"></div>
-                    <div class="spacer-xl"></div>
-                    <div class="spacer-lg"></div>
-                    <span class="inline-arrow">↓</span>
-                    
-                    <div class="activity">
-                        Send checklist &amp; questionnaire
-                    </div>
-                    
-                    <span class="inline-arrow">→</span>
-                    
-                    <div class="activity">
-                        Track document presence
-                    </div>
-                    
-                    <span class="inline-arrow">→</span>
-                    
-                    <div class="activity">
-                        Client follow-ups &amp; chasing
-                    </div>
-                    
-                    <span class="inline-arrow">→</span>
-                    
-                    <div class="activity">
-                        Confirm minimum document readiness
-                    </div>
-                    
-                    <span class="inline-arrow">↓→</span>
-                </div>
-                <div class="lane-annotations">
-                    <div class="as-is-tag">AS-IS: Recently introduced role to reduce case manager overload before assignment. Role performs presence-only checks (not quality or eligibility).</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- SWIMLANE 5: OPERATIONS SUPERVISOR -->
+        <!-- SWIMLANE 4: OPERATIONS SUPERVISOR -->
         <div class="swimlane">
             <div class="lane-header">OPERATIONS<br>SUPERVISOR</div>
             <div class="lane-body">
@@ -608,17 +540,10 @@
                     
                     <span class="inline-arrow">→</span>
                     
-                    <div class="soft-dependency">
-                        <span class="soft-dependency-label">Minimum Document Readiness Reached?</span>
-                    </div>
-                    
-                    <span class="inline-arrow">→</span>
-                    
                     <div class="activity">
                         <span class="step-num">25-26</span>
                         Case Assignment<br>
-                        <small style="font-size:9px;color:#666;">(Review type + workload; assign to Case Manager)</small><br>
-                        <small style="font-size:9px;color:#666;font-style:italic;">Assignment may be delayed until minimum document readiness is achieved.</small>
+                        <small style="font-size:9px;color:#666;">(Review type + workload; assign to Case Manager)</small>
                     </div>
                     
                     <span class="inline-arrow">↓→</span>
@@ -626,7 +551,6 @@
                 <div class="lane-annotations">
                     <div class="as-is-tag">AS-IS: Manual transfer; may lose context</div>
                     <div class="as-is-tag">AS-IS: Supervisor may also act as Case Manager when overloaded</div>
-                    <div class="as-is-tag">AS-IS: Soft operational dependency — not system enforced. Approx. 70% document completeness required before assignment.</div>
                     <!-- BOTTLENECK 5: Manual Priority Determination -->
                     <div class="bottleneck-callout soft-bottleneck">
                         <div class="bottleneck-header">
@@ -642,7 +566,7 @@
             </div>
         </div>
         
-        <!-- SWIMLANE 6: CASE MANAGER -->
+        <!-- SWIMLANE 5: CASE MANAGER -->
         <div class="swimlane" style="min-height:180px;">
             <div class="lane-header">CASE MANAGER</div>
             <div class="lane-body">
@@ -655,7 +579,7 @@
                     
                     <div class="activity">
                         <span class="step-num">27-29</span>
-                        Checklist &amp; Questionnaire Sent (Case Manager / Case Support)<br>
+                        Checklist &amp; Questionnaire Sent<br>
                         <small style="font-size:9px;color:#666;">(Program-specific; deadline communicated)</small>
                     </div>
                     
@@ -695,8 +619,6 @@
                     <div class="as-is-tag">AS-IS: Checklist static; not prioritized by urgency</div>
                     <div class="as-is-tag">AS-IS: No system alerts</div>
                     <div class="as-is-tag">AS-IS: Steps 43-44: Role overlap — CM does chasing, checking, reviewing, renaming, form-filling; no separate clerical role</div>
-                    <div class="as-is-tag">AS-IS: Case Managers experience frequent interruptions due to incomplete documents and shifting priorities.</div>
-                    <div class="as-is-tag">AS-IS: Observed: ~3–4 cycles (TR), 10+ cycles (PR). Partial uploads and delays frequently cause document expiry and rework.</div>
                     <!-- BOTTLENECK 1: Document Collection Rework Loop -->
                     <div class="bottleneck-callout">
                         <div class="bottleneck-header">
@@ -736,7 +658,7 @@
             </div>
         </div>
         
-        <!-- SWIMLANE 7: SUBMISSION TEAM -->
+        <!-- SWIMLANE 6: SUBMISSION TEAM -->
         <div class="swimlane">
             <div class="lane-header">SUBMISSION TEAM</div>
             <div class="lane-body">
@@ -776,9 +698,9 @@
             </div>
         </div>
         
-        <!-- SWIMLANE 8: SENIOR REVIEW -->
+        <!-- SWIMLANE 7: SENIOR REVIEW -->
         <div class="swimlane">
-            <div class="lane-header">SENIOR REVIEW</div>
+            <div class="lane-header">SENIOR REVIEW<br>(Shefali)</div>
             <div class="lane-body">
                 <div class="lane-content senior-review">
                     <div class="spacer-xl"></div>
@@ -807,7 +729,6 @@
                     <span class="inline-arrow">↑→</span>
                 </div>
                 <div class="lane-annotations">
-                    <div class="as-is-tag">AS-IS: Eligibility validation relies on professional judgment and undocumented institutional knowledge. No standardized SOP currently governs eligibility assessment.</div>
                     <!-- BOTTLENECK 4: Senior Availability Dependency -->
                     <div class="bottleneck-callout soft-bottleneck">
                         <div class="bottleneck-header">
@@ -823,7 +744,7 @@
             </div>
         </div>
         
-        <!-- SWIMLANE 9: ADMIN TEAM -->
+        <!-- SWIMLANE 8: ADMIN TEAM -->
         <div class="swimlane">
             <div class="lane-header">ADMIN TEAM</div>
             <div class="lane-body">
@@ -859,8 +780,6 @@
             <div class="as-is-tag">AS-IS: No system-driven SLAs, aging rules, or inactivity alerts</div>
             <div class="as-is-tag">AS-IS: Delays identified through manual reviews, meetings, or client escalation</div>
             <div class="as-is-tag">AS-IS: Case prioritization is manual and leadership-driven</div>
-            <div class="as-is-tag">AS-IS: Daily priorities reset based on urgency, deadlines, and escalation rather than workflow sequence.</div>
-            <div class="as-is-tag">AS-IS: monday.com functions primarily as a system of record. Most execution coordination occurs verbally or via calls.</div>
         </div>
     </div>
     
